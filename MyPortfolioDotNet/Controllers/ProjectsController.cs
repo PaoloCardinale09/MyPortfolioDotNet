@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,18 +10,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyPortfolioDotNet.Data;
 using MyPortfolioDotNet.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+
 
 namespace MyPortfolioDotNet.Controllers
 {
+
     [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public ProjectsController(ApplicationDbContext context)
+        public ProjectsController(ApplicationDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
+        
 
         // GET: Projects
         public async Task<IActionResult> Index()
@@ -43,6 +52,7 @@ namespace MyPortfolioDotNet.Controllers
             }
 
             return View(project);
+                
         }
 
         // GET: Projects/Create
@@ -60,11 +70,30 @@ namespace MyPortfolioDotNet.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Salvataggio dello screenshot nella cartella "uploads" con un nome univoco
+               /* if (project.UploadFile != null && project.UploadFile.Length > 0)
+                {
+                   
+                   
+                    var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                    var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(project.UploadFile.FileName);
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await project.UploadFile.CopyToAsync(fileStream);
+                    }
+
+                    project.Screenshot = "/uploads/" + fileName; // Salvataggio del percorso nel database
+                    return RedirectToAction(nameof(Index));
+
+                } */
                 _context.Add(project);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
+
             }
-            return View(project);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Projects/Edit/5
