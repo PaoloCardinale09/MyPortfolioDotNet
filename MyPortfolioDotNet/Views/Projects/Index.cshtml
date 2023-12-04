@@ -41,7 +41,7 @@
                 @Html.DisplayFor(modelItem => item.Technology)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Screenshot)
+                <img src="@Url.Content(item.Screenshot)" width="100px" height="50px" />
             </td>
             <td>
                     <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil text-dark"></i></a> |

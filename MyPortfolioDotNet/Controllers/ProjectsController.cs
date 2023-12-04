@@ -66,15 +66,13 @@ namespace MyPortfolioDotNet.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Technology,Screenshot")] Project project)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Technology,Screenshot,UploadFile")] Project project)
         {
             if (ModelState.IsValid)
             {
                 // Salvataggio dello screenshot nella cartella "uploads" con un nome univoco
-               /* if (project.UploadFile != null && project.UploadFile.Length > 0)
+                if (project.UploadFile != null && project.UploadFile.Length > 0)
                 {
-                   
-                   
                     var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
                     var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(project.UploadFile.FileName);
                     var filePath = Path.Combine(uploadsFolder, fileName);
@@ -85,16 +83,17 @@ namespace MyPortfolioDotNet.Controllers
                     }
 
                     project.Screenshot = "/uploads/" + fileName; // Salvataggio del percorso nel database
-                    return RedirectToAction(nameof(Index));
+                }
 
-                } */
                 _context.Add(project);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
-
             }
-            return RedirectToAction(nameof(Index));
+
+            // Se la ModelState non è valida, ritorna alla vista di creazione con gli errori di validazione
+            return View(project);
         }
+
 
         // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
