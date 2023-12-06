@@ -29,12 +29,16 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Technology)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Screenshot)
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Images)
         </dt>
-        <dd class = "col-sm-10">
-            <img src="@Url.Content(Model.Screenshot)" class="img-fluid" />
+        <dd class="col-sm-10">
+            @foreach (var image in Model.Images)
+            {
+                <img src="@Url.Content(image.ScreenshotPath)" class="img-fluid" />
+            }
         </dd>
+
     </dl>
 </div>
 <div>

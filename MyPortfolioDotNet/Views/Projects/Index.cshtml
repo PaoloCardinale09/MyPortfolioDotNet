@@ -10,6 +10,7 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
 <table class="table">
     <thead>
         <tr>
@@ -23,32 +24,36 @@
                 @Html.DisplayNameFor(model => model.Technology)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Screenshot)
+                Images
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Technology)
-            </td>
-            <td>
-                <img src="@Url.Content(item.Screenshot)" width="100px" height="50px" />
-            </td>
-            <td>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Technology)
+                </td>
+                <td>
+                    @foreach (var image in item.Images)
+                    {
+                        <img src="@Url.Content(image.ScreenshotPath)" width="100px" height="50px" />
+                    }
+                </td>
+                <td>
                     <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil text-dark"></i></a> |
                     <a asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-eye"></i></a> |
                     <a asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash text-danger"></i></a>
-            </td>
-        </tr>
-}
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

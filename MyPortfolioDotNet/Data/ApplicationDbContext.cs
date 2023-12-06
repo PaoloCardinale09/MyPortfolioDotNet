@@ -11,5 +11,19 @@ namespace MyPortfolioDotNet.Data
         }
 
         public DbSet<Project> Project { get; set; }
+        public DbSet<Image> Images { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Project>()
+                .HasMany(p => p.Images)
+                .WithOne(i => i.Project)
+                .HasForeignKey(i => i.ProjectId);
+        }
     }
+
 }
+

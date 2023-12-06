@@ -243,7 +243,7 @@ namespace MyPortfolioDotNet.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Screenshot")
+                    b.Property<string>("ScreenshotPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

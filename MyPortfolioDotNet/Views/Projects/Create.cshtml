@@ -29,10 +29,9 @@
                 <span asp-validation-for="Technology" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="UploadFile" class="control-label"></label>
-                <input type="file" asp-for="UploadFile" class="form-control" id="uploadFileInput" onchange="previewImage(this)" />
-                <span asp-validation-for="UploadFile" class="text-danger"></span>
-                <img id="imagePreview" src="" style="max-width: 100%; max-height: 200px; margin-top: 10px;" />
+                <label asp-for="Images" class="control-label"></label>
+                <input type="file" asp-for="Images" class="form-control" multiple />
+                <span asp-validation-for="Images" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
