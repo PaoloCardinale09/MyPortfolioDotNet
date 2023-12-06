@@ -61,9 +61,6 @@ namespace MyPortfolioDotNet.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(project);
-                await _context.SaveChangesAsync();
-
                 if (imageFiles != null && imageFiles.Count > 0)
                 {
                     foreach (var file in imageFiles)
@@ -78,14 +75,16 @@ namespace MyPortfolioDotNet.Controllers
                         _context.Images.Add(image);
                     }
 
+                    _context.Add(project);
                     await _context.SaveChangesAsync();
                 }
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Privacy","Home");
             }
 
             return View(project);
         }
+
 
         public async Task<IActionResult> Edit(int? id)
         {

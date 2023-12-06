@@ -10,10 +10,7 @@ namespace MyPortfolioDotNet.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "ScreenshotPath",
-                table: "Project",
-                newName: "Link");
+          
 
             migrationBuilder.CreateTable(
                 name: "Images",

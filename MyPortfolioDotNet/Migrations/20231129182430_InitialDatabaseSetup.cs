@@ -19,7 +19,7 @@ namespace MyPortfolioDotNet.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Technology = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Screenshot = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Link = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -29,9 +29,15 @@
                 <span asp-validation-for="Technology" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Images" class="control-label"></label>
-                <input type="file" asp-for="Images" class="form-control" multiple />
-                <span asp-validation-for="Images" class="text-danger"></span>
+                <label asp-for="Link" class="control-label"></label>
+                <input asp-for="Link" class="form-control" />
+                <span asp-validation-for="Link" class="text-danger"></span>
+            </div>
+        
+            <div class="form-group">
+                <label asp-for="UploadFile" class="control-label"></label>
+                <input type="file" asp-for="UploadFile" class="form-control" multiple />
+              
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

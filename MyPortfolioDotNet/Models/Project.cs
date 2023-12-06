@@ -13,7 +13,9 @@ namespace MyPortfolioDotNet.Models
         public string Technology { get; set; }
         
         public string Link { get; set; }
-        public List<Image> Images { get; set; } = new List<Image>();
+        [NotMapped]
+        public IFormFile UploadFile { get; set; }
+        public List<Image>? Images { get; set; }
 
 
 
