@@ -1,23 +1,15 @@
 ﻿using System;
-using System.IO;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyPortfolioDotNet.Data;
 using MyPortfolioDotNet.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-
 
 namespace MyPortfolioDotNet.Controllers
 {
-
-    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -28,13 +20,15 @@ namespace MyPortfolioDotNet.Controllers
             _context = context;
             _environment = environment;
         }
-        
+
 
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Project.ToListAsync());
+            var projectsWithImages = await _context.Project.Include(p => p.Images).ToListAsync();
+            return View(projectsWithImages);
         }
+
 
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -45,6 +39,7 @@ namespace MyPortfolioDotNet.Controllers
             }
 
             var project = await _context.Project
+                .Include(p => p.Images)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (project == null)
             {
@@ -52,7 +47,6 @@ namespace MyPortfolioDotNet.Controllers
             }
 
             return View(project);
-                
         }
 
         // GET: Projects/Create
@@ -66,29 +60,42 @@ namespace MyPortfolioDotNet.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Technology,Screenshot,UploadFile")] Project project)
+        public async Task<IActionResult> Create(Project project)
         {
             if (ModelState.IsValid)
             {
-                // Salvataggio dello screenshot nella cartella "uploads" con un nome univoco
-                if (project.UploadFile != null && project.UploadFile.Length > 0)
-                {
-                    // Chiamata al metodo SaveFileAsync per gestire il salvataggio del file
-                    var screenshotPath = await GetUploadedFileNameAsync(project.UploadFile);
+                
+                _context.Project.Add(project);
+                await _context.SaveChangesAsync(); // Salva il progetto per ottenere l'ID generato
 
-                    if (screenshotPath != null)
+                var filesWithContent = project.UploadFiles.Where(f => f.Length > 0);
+                
+
+                foreach (var uploadedFile in filesWithContent)
+                {
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + uploadedFile.FileName;
+                    var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        project.Screenshot = screenshotPath;
+                        await uploadedFile.CopyToAsync(fileStream);
                     }
 
+                    var image = new Image
+                    {
+                        ImageUrl = "/uploads/" + uniqueFileName,
+                        ProjectId = project.Id // Usa l'ID appena generato del progetto
+                    };
+
+                    _context.Image.Add(image);
                 }
 
-                _context.Add(project);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Salva le immagini associate al progetto
+
                 return RedirectToAction(nameof(Index));
             }
 
-            // Se la ModelState non è valida, ritorna alla vista di creazione con gli errori di validazione
             return View(project);
         }
 
@@ -100,20 +107,20 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Project.FindAsync(id);
+            var project = await _context.Project.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+
             if (project == null)
             {
                 return NotFound();
             }
+
             return View(project);
         }
 
         // POST: Projects/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Technology,Screenshot,UploadFile")] Project project)
+        public async Task<IActionResult> Edit(int id, Project project)
         {
             if (id != project.Id)
             {
@@ -124,23 +131,7 @@ namespace MyPortfolioDotNet.Controllers
             {
                 try
                 {
-                    // Carica il progetto esistente dal database
-                    var existingProject = await _context.Project.FindAsync(id);
-
-                    // Aggiorna le proprietà del progetto esistente con i valori del modello
-                    _context.Entry(existingProject).CurrentValues.SetValues(project);
-
-                    // Gestisci il caricamento del file
-                    if (project.UploadFile != null && project.UploadFile.Length > 0)
-                    {
-                        var screenshotPath = await GetUploadedFileNameAsync(project.UploadFile);
-
-                        if (screenshotPath != null)
-                        {
-                            existingProject.Screenshot = screenshotPath;
-                        }
-                    }
-
+                    _context.Update(project);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -154,11 +145,9 @@ namespace MyPortfolioDotNet.Controllers
                         throw;
                     }
                 }
-              
-                
                 return RedirectToAction(nameof(Index));
             }
-            
+
             return View(project);
         }
 
@@ -200,27 +189,5 @@ namespace MyPortfolioDotNet.Controllers
         {
             return _context.Project.Any(e => e.Id == id);
         }
-
-        //Methods
-        public async Task<string> GetUploadedFileNameAsync(IFormFile uploadFile)
-        {
-            if (uploadFile != null && uploadFile.Length > 0)
-            {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
-                var fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(uploadFile.FileName);
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await uploadFile.CopyToAsync(fileStream);
-                }
-
-                return "/uploads/" + fileName; // Salvataggio del percorso nel database
-            }
-
-            return null;
-        }
     }
-
-    
 }

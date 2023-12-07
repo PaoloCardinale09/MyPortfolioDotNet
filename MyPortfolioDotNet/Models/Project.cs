@@ -11,9 +11,11 @@ namespace MyPortfolioDotNet.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string Technology { get; set; }
-        public string? Screenshot { get; set; }
+        public string? Link { get; set; }
+
         [NotMapped]
-        public IFormFile UploadFile { get; set; }
+        public List<IFormFile> UploadFiles { get; set; }
+        public ICollection<Image>? Images { get; set; }
 
 
 

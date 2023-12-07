@@ -30,13 +30,26 @@
             @Html.DisplayFor(model => model.Technology)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Screenshot)
+            @Html.DisplayNameFor(model => model.Link)
         </dt>
         <dd class = "col-sm-10">
-            <img src="@Url.Content(Model.Screenshot)" class="img-fluid" />
+            @Html.DisplayFor(model => model.Link)
         </dd>
     </dl>
 </div>
+
+@if (Model.Images != null && Model.Images.Any())
+{
+    <h4>Images</h4>
+    <div class="row">
+        @foreach (var image in Model.Images)
+        {
+            <div class="col-md-3">
+                <img src="@image.ImageUrl" alt="Project Image" class="img-thumbnail" />
+            </div>
+        }
+    </div>
+}
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
