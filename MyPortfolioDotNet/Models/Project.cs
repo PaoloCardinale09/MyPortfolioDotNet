@@ -14,7 +14,7 @@ namespace MyPortfolioDotNet.Models
         public string? Link { get; set; }
 
         [NotMapped]
-        public List<IFormFile> UploadFiles { get; set; }
+        public List<IFormFile>? UploadFiles { get; set; }
         public ICollection<Image>? Images { get; set; }
 
 
