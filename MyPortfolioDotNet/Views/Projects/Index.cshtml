@@ -23,8 +23,10 @@
                 @Html.DisplayNameFor(model => model.Technology)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Screenshot)
+                @Html.DisplayNameFor(model => model.Link)
             </th>
+            <th>
+Picture            </th>
             <th></th>
         </tr>
     </thead>
@@ -41,12 +43,22 @@
                 @Html.DisplayFor(modelItem => item.Technology)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Screenshot)
+                @Html.DisplayFor(modelItem => item.Link)
             </td>
             <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil text-dark"></i></a> |
-                    <a asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-eye"></i></a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash text-danger"></i></a>
+                    @if (item.Images != null && item.Images.Any())
+                    {
+                        @foreach (var pic in item.Images)
+                        {
+                            <img src="@pic.ImageUrl" width="100px" height="50px" />
+
+                        }
+                    }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
 }
