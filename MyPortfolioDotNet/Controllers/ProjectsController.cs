@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading.Tasks;   
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +25,12 @@ namespace MyPortfolioDotNet.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var projectsWithImages = await _context.Project.Include(p => p.Images).ToListAsync();
-            return View(projectsWithImages);
+            var projectsWithImagesAndTechnologies = await _context.Project
+                .Include(p => p.Images)
+                .Include(p => p.SelectedTechnologies)
+                .ToListAsync();
+
+            return View(projectsWithImagesAndTechnologies);
         }
 
         // GET: Projects/Details/5
@@ -51,6 +55,8 @@ namespace MyPortfolioDotNet.Controllers
         // GET: Projects/Create
         public IActionResult Create()
         {
+            ViewBag.AvailableTechnologies = _context.Technology.ToList();
+
             return View();
         }
 
@@ -61,6 +67,14 @@ namespace MyPortfolioDotNet.Controllers
         {
             if (ModelState.IsValid)
             {
+
+                if (project.SelectedTechnologyIds != null && project.SelectedTechnologyIds.Any())
+                {
+                    project.SelectedTechnologies = _context.Technology
+                        .Where(t => project.SelectedTechnologyIds.Contains(t.Id))
+                        .ToList();
+                }
+
                 _context.Project.Add(project);
                 await _context.SaveChangesAsync();
 
@@ -104,12 +118,17 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Project.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _context.Project
+                .Include(p => p.SelectedTechnologies)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null)
             {
                 return NotFound();
             }
+
+            ViewBag.AvailableTechnologies = _context.Technology.ToList();
 
             return View(project);
         }
@@ -172,7 +191,6 @@ namespace MyPortfolioDotNet.Controllers
                         }
                     }
 
-
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -192,6 +210,8 @@ namespace MyPortfolioDotNet.Controllers
             return View(project);
         }
 
+
+
         // GET: Projects/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -200,7 +220,9 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Project.FirstOrDefaultAsync(m => m.Id == id);
+            var project = await _context.Project
+                .Include(p => p.SelectedTechnologies)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (project == null)
             {
                 return NotFound();

@@ -23,11 +23,23 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Technology)
+        <dt class="col-sm-2">
+            Technologies
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Technology)
+        <dd class="col-sm-10">
+            @if (Model.SelectedTechnologies != null && Model.SelectedTechnologies.Any())
+            {
+                foreach (var technology in Model.SelectedTechnologies)
+                {
+                    <div>
+                        @technology.Name
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No technologies associated with this project.</p>
+            }
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Link)
