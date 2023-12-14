@@ -11,32 +11,39 @@
     <h4>Project</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Technology)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Technology)
-        </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Link)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Link)
         </dd>
     </dl>
 </div>
+
+@if (Model != null && Model.ProjectTechnologies != null && Model.ProjectTechnologies.Any())
+{
+    <h4>Technologies</h4>
+    <div class="row">
+        <ul>
+            @foreach (var tech in Model.ProjectTechnologies)
+            {
+                <li>@tech.Technology.Name</li>
+            }
+        </ul>
+    </div>
+}
 
 @if (Model.Images != null && Model.Images.Any())
 {

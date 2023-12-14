@@ -20,7 +20,7 @@
                 @Html.DisplayNameFor(model => model.Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Technology)
+                Technology
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Link)
@@ -39,9 +39,18 @@ Picture            </th>
             <td>
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Technology)
-            </td>
+                <td>
+                    @if (item.ProjectTechnologies != null)
+                    {
+                        <ul>
+                            @foreach (var tech in item.ProjectTechnologies)
+                            {
+                                <li>@tech.Technology.Name</li>
+                            }
+                        </ul>
+                    }
+                </td>
+
             <td>
                 @Html.DisplayFor(modelItem => item.Link)
             </td>

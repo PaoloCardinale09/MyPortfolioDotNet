@@ -31,10 +31,22 @@
 
             <!-- Campo Technology -->
             <div class="form-group">
-                <label asp-for="Technology" class="control-label"></label>
-                <input asp-for="Technology" class="form-control" />
-                <span asp-validation-for="Technology" class="text-danger"></span>
+                <label class="control-label">Select Technologies</label>
+                <div>
+                    @foreach (var technology in ViewBag.AvailableTechnologies)
+                    {
+                        <div>
+                            <input type="checkbox" name="selectedTechnologyIds" value="@technology.Id"
+                            @(ViewBag.SelectedTechnologies != null && ViewBag.SelectedTechnologies.Contains(technology.Id) ? "checked" : "") />
+                            <label>@technology.Name</label>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="ProjectTechnologies" class="text-danger"></span>
             </div>
+
+
+
 
             <!-- Campo Link -->
             <div class="form-group">
