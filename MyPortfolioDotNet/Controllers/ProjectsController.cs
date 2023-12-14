@@ -25,9 +25,15 @@ namespace MyPortfolioDotNet.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var projectsWithImages = await _context.Project.Include(p => p.Images).ToListAsync();
+            var projectsWithImages = await _context.Project
+                .Include(p => p.Images)
+                .Include(p => p.ProjectTechnologies)
+                    .ThenInclude(pt => pt.Technology) // Include le informazioni sulle tecnologie
+                .ToListAsync();
+
             return View(projectsWithImages);
         }
+
 
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -39,7 +45,10 @@ namespace MyPortfolioDotNet.Controllers
 
             var project = await _context.Project
                 .Include(p => p.Images)
+                .Include(p => p.ProjectTechnologies)
+                    .ThenInclude(pt => pt.Technology) // Include le informazioni sulle tecnologie
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (project == null)
             {
                 return NotFound();
@@ -48,21 +57,36 @@ namespace MyPortfolioDotNet.Controllers
             return View(project);
         }
 
+
         // GET: Projects/Create
         public IActionResult Create()
         {
+            ViewBag.AvailableTechnologies = _context.Technology.ToList();
             return View();
         }
 
-        // POST: Projects/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Project project)
+        public async Task<IActionResult> Create(Project project, List<int> SelectedTechnologyIds)
         {
             if (ModelState.IsValid)
             {
                 _context.Project.Add(project);
                 await _context.SaveChangesAsync();
+
+                if (SelectedTechnologyIds != null && SelectedTechnologyIds.Any())
+                {
+                    foreach (var techId in SelectedTechnologyIds)
+                    {
+                        var projectTechnology = new ProjectTechnology
+                        {
+                            ProjectId = project.Id,
+                            TechnologyId = techId
+                        };
+                        _context.ProjectTechnology.Add(projectTechnology);
+                    }
+                    await _context.SaveChangesAsync();
+                }
 
                 if (project.UploadFiles != null && project.UploadFiles.Any(f => f.Length > 0))
                 {
@@ -92,8 +116,11 @@ namespace MyPortfolioDotNet.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            ViewBag.AvailableTechnologies = _context.Technology.ToList();
             return View(project);
         }
+
+
 
 
         // GET: Projects/Edit/5
@@ -104,20 +131,33 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Project.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await _context.Project
+                .Include(p => p.Images)
+                .Include(p => p.ProjectTechnologies)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null)
             {
                 return NotFound();
             }
 
+            // Carica tutte le tecnologie disponibili
+            ViewBag.AvailableTechnologies = await _context.Technology.ToListAsync();
+
+            // Ottieni gli ID delle tecnologie associate al progetto
+            var selectedTechIds = project.ProjectTechnologies.Select(pt => pt.TechnologyId).ToList();
+
+            // Passa l'elenco delle tecnologie selezionate alla vista
+            ViewBag.SelectedTechnologies = selectedTechIds;
+
             return View(project);
         }
+
 
         // POST: Projects/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Project project, List<int> deletedImages)
+        public async Task<IActionResult> Edit(int id, Project project, List<int> selectedTechnologyIds, List<int> deletedImages)
         {
             if (id != project.Id)
             {
@@ -130,6 +170,7 @@ namespace MyPortfolioDotNet.Controllers
                 {
                     var projectToUpdate = await _context.Project
                         .Include(p => p.Images)
+                        .Include(p => p.ProjectTechnologies)
                         .FirstOrDefaultAsync(p => p.Id == id);
 
                     if (projectToUpdate == null)
@@ -139,6 +180,19 @@ namespace MyPortfolioDotNet.Controllers
 
                     _context.Entry(projectToUpdate).CurrentValues.SetValues(project);
 
+                    // Aggiorna le tecnologie associate
+                    if (selectedTechnologyIds != null && selectedTechnologyIds.Any())
+                    {
+                        projectToUpdate.ProjectTechnologies = selectedTechnologyIds
+                            .Select(techId => new ProjectTechnology { ProjectId = project.Id, TechnologyId = techId })
+                            .ToList();
+                    }
+                    else
+                    {
+                        projectToUpdate.ProjectTechnologies = new List<ProjectTechnology>();
+                    }
+
+                    // Gestione delle immagini
                     if (deletedImages != null && deletedImages.Any() && projectToUpdate.Images != null)
                     {
                         var imagesToRemove = projectToUpdate.Images.Where(i => deletedImages.Contains(i.Id)).ToList();
@@ -172,7 +226,6 @@ namespace MyPortfolioDotNet.Controllers
                         }
                     }
 
-
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -192,6 +245,7 @@ namespace MyPortfolioDotNet.Controllers
             return View(project);
         }
 
+
         // GET: Projects/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -200,7 +254,11 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Project.FirstOrDefaultAsync(m => m.Id == id);
+            var project = await _context.Project
+                .Include(p => p.ProjectTechnologies)
+                    .ThenInclude(pt => pt.Technology) // Include le informazioni sulle tecnologie
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (project == null)
             {
                 return NotFound();
@@ -208,6 +266,7 @@ namespace MyPortfolioDotNet.Controllers
 
             return View(project);
         }
+
 
         // POST: Projects/Delete/5
         [HttpPost, ActionName("Delete")]
