@@ -72,7 +72,31 @@ namespace MyPortfolioDotNet.Controllers
             if (ModelState.IsValid)
             {
                 _context.Project.Add(project);
+
+                // Recupero tutti i progetti dal database
+                var projects = _context.Project.ToList();
+
+                // Se OrderShow non è stato fornito (è 0 o null), assegno 1 di default
+                if (project.OrderShow == 0 || project.OrderShow == null)
+                {
+                    project.OrderShow = 1;
+                }
+
+                // Incremento di +1 tutti gli altri progetti
+                foreach (var otherProject in projects)
+                {
+                    if (otherProject.Id != project.Id && otherProject.OrderShow >= project.OrderShow)
+                    {
+                        otherProject.OrderShow++;
+                    }
+                }
+
                 await _context.SaveChangesAsync();
+
+            
+
+                    await _context.SaveChangesAsync();
+
 
                 if (SelectedTechnologyIds != null && SelectedTechnologyIds.Any())
                 {
