@@ -29,7 +29,8 @@ namespace MyPortfolioDotNet.Controllers
             var projectsWithImages = await _context.Project
                 .Include(p => p.Images)
                 .Include(p => p.ProjectTechnologies)
-                    .ThenInclude(pt => pt.Technology) // Include le informazioni sulle tecnologie
+                .ThenInclude(pt => pt.Technology)
+                .OrderBy(p => p.OrderShow)
                 .ToListAsync();
 
             return View(projectsWithImages);
