@@ -146,13 +146,13 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            // Carica tutte le tecnologie disponibili
+            // Carico tutte le tecnologie disponibili
             ViewBag.AvailableTechnologies = await _context.Technology.ToListAsync();
 
-            // Ottieni gli ID delle tecnologie associate al progetto
+            // Ottiengo gli ID delle tecnologie associate al progetto
             var selectedTechIds = project.ProjectTechnologies.Select(pt => pt.TechnologyId).ToList();
 
-            // Passa l'elenco delle tecnologie selezionate alla vista
+            // Passo l'elenco delle tecnologie selezionate alla vista
             ViewBag.SelectedTechnologies = selectedTechIds;
 
             return View(project);
