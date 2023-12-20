@@ -310,14 +310,28 @@ namespace MyPortfolioDotNet.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var project = await _context.Project.FindAsync(id);
+
             if (project != null)
             {
+                // Salvo l'OrderShow del progetto che sto per eliminare
+                var orderShowToDelete = project.OrderShow;
+
+                // Rimuovo il progetto
                 _context.Project.Remove(project);
+
+                // Decrementa gli OrderShow degli altri progetti con OrderShow > del progetto elinato
+                var projectsToUpdate = _context.Project.Where(p => p.OrderShow > orderShowToDelete).ToList();
+
+                foreach (var projectToUpdate in projectsToUpdate)
+                {
+                    projectToUpdate.OrderShow--;
+                }
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool ProjectExists(int id)
         {
@@ -349,50 +363,7 @@ namespace MyPortfolioDotNet.Controllers
         await _context.SaveChangesAsync();
 
     }
-        // non funziona edit 
-        private async Task UpdateOrderShowAndSave(Project projectToUpdate)
-        {
-            var originalOrderShow = projectToUpdate.OrderShow;
-
-            // Verifica se OrderShow è stato modificato
-            if (projectToUpdate.OrderShow != originalOrderShow)
-            {
-                // Determina la direzione del cambiamento
-                int changeDirection = projectToUpdate.OrderShow > originalOrderShow ? 1 : -1;
-
-                // Aggiorna gli altri progetti
-                var projectsToUpdate = _context.Project
-                    .Where(p => p.Id != projectToUpdate.Id)
-                    .ToList();
-
-                foreach (var otherProject in projectsToUpdate)
-                {
-                    if (changeDirection == 1 && otherProject.OrderShow >= originalOrderShow && otherProject.OrderShow < projectToUpdate.OrderShow)
-                    {
-                        otherProject.OrderShow++;
-                    }
-                    else if (changeDirection == -1 && otherProject.OrderShow <= originalOrderShow && otherProject.OrderShow > projectToUpdate.OrderShow)
-                    {
-                        otherProject.OrderShow--;
-                    }
-                }
-
-                // Riordina la lista in base all'OrderShow aggiornato
-                projectsToUpdate = projectsToUpdate.OrderBy(p => p.OrderShow).ToList();
-
-                // Assegna nuovi valori di OrderShow
-                for (int i = 0; i < projectsToUpdate.Count; i++)
-                {
-                    projectsToUpdate[i].OrderShow = i + 1;
-                }
-            }
-
-            // Salva le modifiche nel database
-            await _context.SaveChangesAsync();
-        }
-
-
-
+       
     }
 
 }

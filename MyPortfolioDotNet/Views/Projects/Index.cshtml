@@ -14,6 +14,9 @@
     <thead>
         <tr>
             <th>
+                Order Show
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
             <th>
@@ -26,13 +29,18 @@
                 @Html.DisplayNameFor(model => model.Link)
             </th>
             <th>
-Picture            </th>
+                Picture            
+            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.OrderShow)
+
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
