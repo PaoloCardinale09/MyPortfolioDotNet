@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +73,11 @@ namespace MyPortfolioDotNet.Controllers
             if (ModelState.IsValid)
             {
                 _context.Project.Add(project);
+
+                await CreateOrderShowAndSave(project);
+
                 await _context.SaveChangesAsync();
+
 
                 if (SelectedTechnologyIds != null && SelectedTechnologyIds.Any())
                 {
@@ -141,13 +146,13 @@ namespace MyPortfolioDotNet.Controllers
                 return NotFound();
             }
 
-            // Carica tutte le tecnologie disponibili
+            // Carico tutte le tecnologie disponibili
             ViewBag.AvailableTechnologies = await _context.Technology.ToListAsync();
 
-            // Ottieni gli ID delle tecnologie associate al progetto
+            // Ottiengo gli ID delle tecnologie associate al progetto
             var selectedTechIds = project.ProjectTechnologies.Select(pt => pt.TechnologyId).ToList();
 
-            // Passa l'elenco delle tecnologie selezionate alla vista
+            // Passo l'elenco delle tecnologie selezionate alla vista
             ViewBag.SelectedTechnologies = selectedTechIds;
 
             return View(project);
@@ -177,8 +182,39 @@ namespace MyPortfolioDotNet.Controllers
                     {
                         return NotFound();
                     }
+                    // prendo il valori di OrderShow prima della modifica
+                    var originalOrderShow = projectToUpdate.OrderShow;
 
                     _context.Entry(projectToUpdate).CurrentValues.SetValues(project);
+
+                    //Gestione dell'OrderShow
+                    // Prendo tutti i Project e li converto in una lista 
+                    var projects = _context.Project.ToList();
+
+                    // Se OrderShow originale è >= al nuovo OrderShow modificato 
+                    if (originalOrderShow >= project.OrderShow)
+                    {
+                        // Incremento OrderShow per tutti i progetti con OrderShow minore o uguale all'originale
+                        foreach (var item in projects)
+                        {   
+                            // Incremento i Project diversi da quello modificato se sono <=, fino a che non siano >=  al nuovo valore  assegnato
+                            if (item.Id != projectToUpdate.Id && item.OrderShow <= originalOrderShow && item.OrderShow >= project.OrderShow )
+                            {
+                                item.OrderShow++;
+                            }
+                        }
+                        // Se OrderShow originale è < al nuovo OrderShow modificato 
+                    }else if (originalOrderShow < project.OrderShow){ 
+
+                        foreach (var item in projects)
+                        {
+                                 // Decremento i Project diversi da quello modificato se sono > dell' OrderShow originale e <= del nuovo valore assegnato 
+                                 if (item.Id != projectToUpdate.Id && item.OrderShow > originalOrderShow && item.OrderShow <= project.OrderShow)
+                                 {
+                                    item.OrderShow--;
+                                 }
+                        }
+                    }
 
                     // Aggiorna le tecnologie associate
                     if (selectedTechnologyIds != null && selectedTechnologyIds.Any())
@@ -287,5 +323,76 @@ namespace MyPortfolioDotNet.Controllers
         {
             return _context.Project.Any(e => e.Id == id);
         }
+
+
+    // Methods
+    public async Task CreateOrderShowAndSave(Project project)
+    {
+        // Recupero tutti i progetti dal database
+        var projects = _context.Project.ToList();
+
+        // Se OrderShow è null, assegno 1 di default
+        if (project.OrderShow == 0 || project.OrderShow == null)
+        {
+            project.OrderShow = 1;
+        }
+
+        // Incremento di +1 tutti gli altri progetti
+        foreach (var otherProject in projects)
+        {
+            if (otherProject.OrderShow >= project.OrderShow)
+            {
+                otherProject.OrderShow++;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
     }
+        // non funziona edit 
+        private async Task UpdateOrderShowAndSave(Project projectToUpdate)
+        {
+            var originalOrderShow = projectToUpdate.OrderShow;
+
+            // Verifica se OrderShow è stato modificato
+            if (projectToUpdate.OrderShow != originalOrderShow)
+            {
+                // Determina la direzione del cambiamento
+                int changeDirection = projectToUpdate.OrderShow > originalOrderShow ? 1 : -1;
+
+                // Aggiorna gli altri progetti
+                var projectsToUpdate = _context.Project
+                    .Where(p => p.Id != projectToUpdate.Id)
+                    .ToList();
+
+                foreach (var otherProject in projectsToUpdate)
+                {
+                    if (changeDirection == 1 && otherProject.OrderShow >= originalOrderShow && otherProject.OrderShow < projectToUpdate.OrderShow)
+                    {
+                        otherProject.OrderShow++;
+                    }
+                    else if (changeDirection == -1 && otherProject.OrderShow <= originalOrderShow && otherProject.OrderShow > projectToUpdate.OrderShow)
+                    {
+                        otherProject.OrderShow--;
+                    }
+                }
+
+                // Riordina la lista in base all'OrderShow aggiornato
+                projectsToUpdate = projectsToUpdate.OrderBy(p => p.OrderShow).ToList();
+
+                // Assegna nuovi valori di OrderShow
+                for (int i = 0; i < projectsToUpdate.Count; i++)
+                {
+                    projectsToUpdate[i].OrderShow = i + 1;
+                }
+            }
+
+            // Salva le modifiche nel database
+            await _context.SaveChangesAsync();
+        }
+
+
+
+    }
+
 }
