@@ -4,6 +4,9 @@
     ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@section Styles {
+    <link rel="stylesheet" href="~/css/ProjectEdit.css" />
+}
 
 <h1>Edit</h1>
 
@@ -31,7 +34,7 @@
             <!-- Campo Description -->
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+                <textarea asp-for="Description" class="form-control"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
@@ -65,10 +68,10 @@
             @if (Model.Images != null && Model.Images.Any())
             {
                 <h4>Current Images</h4>
-                <div class="row" id="existingImages">
+                <div class="row mt-3 mb-3" id="existingImages">
                     @foreach (var image in Model.Images)
                     {
-                        <div class="col-md-3">
+                        <div class="col-md-3 ">
                             <img src="@image.ImageUrl" alt="Project Image" class="img-thumbnail" />
                             <input type="checkbox" name="deletedImages" value="@image.Id" /> Delete
                         </div>

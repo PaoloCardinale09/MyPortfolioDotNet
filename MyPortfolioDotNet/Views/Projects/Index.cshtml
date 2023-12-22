@@ -5,6 +5,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+
+
 <h1>Index</h1>
 
 <p>
@@ -67,7 +69,7 @@
                     {
                         @foreach (var pic in item.Images)
                         {
-                            <img src="@pic.ImageUrl" width="100px" height="50px" />
+                            <img class="object-fit-contain" src="@pic.ImageUrl" width="100px" height="50px" />
 
                         }
                     }
