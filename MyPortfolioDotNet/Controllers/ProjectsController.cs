@@ -235,7 +235,15 @@ namespace MyPortfolioDotNet.Controllers
                         var imagesToRemove = projectToUpdate.Images.Where(i => deletedImages.Contains(i.Id)).ToList();
                         foreach (var imageToRemove in imagesToRemove)
                         {
+                            // Rimuovo l'immagine dal contesto EF
                             _context.Image.Remove(imageToRemove);
+
+                            // Elimino il file fisico dalla cartella
+                            var imagePath = Path.Combine(_environment.WebRootPath, imageToRemove.ImageUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(imagePath))
+                            {
+                                System.IO.File.Delete(imagePath);
+                            }
                         }
                     }
 
@@ -310,26 +318,40 @@ namespace MyPortfolioDotNet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var project = await _context.Project.FindAsync(id);
+            var project = await _context.Project
+                .Include(p => p.Images)  // Include le immagini associate al progetto
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project != null)
             {
                 // Salvo l'OrderShow del progetto che sto per eliminare
                 var orderShowToDelete = project.OrderShow;
 
-                // Rimuovo il progetto
+                // Rimuovo il progetto dal database
                 _context.Project.Remove(project);
 
-                // Decrementa gli OrderShow degli altri progetti con OrderShow > del progetto elinato
+                // Decrementa gli OrderShow degli altri progetti con OrderShow > del progetto eliminato
                 var projectsToUpdate = _context.Project.Where(p => p.OrderShow > orderShowToDelete).ToList();
 
                 foreach (var projectToUpdate in projectsToUpdate)
                 {
                     projectToUpdate.OrderShow--;
                 }
+
+                // Elimina i file delle immagini associate al progetto dalla cartella
+                foreach (var image in project.Images)
+                {
+                    var imagePath = Path.Combine(_environment.WebRootPath, image.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                }
+
+                // Salva le modifiche nel database
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
